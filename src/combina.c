@@ -39,16 +39,16 @@ int aleatorioEntre(int menor, int maior) {
 	return aleatorio;
 }
 
-void combina(int gi, int *grupos, int *faixas, float acmAmtr, float acmPcld,
+void combina(int gi, int *grupos, int faixas, float acmAmtr, float acmPcld,
 		float *melhorIndice, char resultado[]) {
 	char result[39] = "";
 	int fi;
 
 	for (gi; gi < *grupos; gi++) {
-		for (fi = 0; fi < *faixas; fi++) {
+		for (fi = 0; fi < faixas; fi++) {
 			sprintf(result, "%s%02i%i+", resultado, gi + 1, fi + 1);
-			acmAmtr += reducoes[gi][fi].amtr;
-			acmPcld += reducoes[gi][fi].pcld;
+			acmAmtr += reducoes.grupos[gi].faixas[fi].amtr;
+			acmPcld += reducoes.grupos[gi].faixas[fi].pcld;
 
 			if ((acmAmtr / acmPcld) < *melhorIndice) {
 				*melhorIndice = (acmAmtr / acmPcld);
@@ -56,7 +56,7 @@ void combina(int gi, int *grupos, int *faixas, float acmAmtr, float acmPcld,
 			}
 
 			if (gi < (*grupos - 1)) {
-				combina(gi + 1, grupos, faixas, acmAmtr, acmPcld, melhorIndice,
+				combina(gi + 1, grupos, reducoes.grupos[gi + 1].qtFaixas, acmAmtr, acmPcld, melhorIndice,
 						result);
 			}
 		}
@@ -65,7 +65,7 @@ void combina(int gi, int *grupos, int *faixas, float acmAmtr, float acmPcld,
 }
 
 int main(int argc, char *argv[]) {
-	int grupos, maxFaixas, faixas, g, f, amtrIni, pcldIni, pcldFim;
+	int grupos, maxFaixas, g, f, amtrIni, pcldIni, pcldFim;
 	char result[39] = "";
 	double start, stop, elapsed;
 	time_t timerini, timerfim;
@@ -85,36 +85,27 @@ int main(int argc, char *argv[]) {
 
 	for (g = 0; g < grupos; g++) {
 	    
-	    faixas = aleatorioEntre(1, maxFaixas);
+	    reducoes.grupos[g].qtFaixas = aleatorioEntre(1, maxFaixas);
 	    
-		for (f = 0; f < faixas; f++) {
+		for (f = 0; f < reducoes.grupos[g].qtFaixas; f++) {
 			if (f == 0) {
-				reducoes[g][f].pcld = aleatorioEntre(pcldIni, pcldFim);
-				reducoes[g][f].amtr = aleatorioEntre(amtrIni,
-						reducoes[g][f].pcld);
+				reducoes.grupos[g].faixas[f].pcld = aleatorioEntre(pcldIni, pcldFim);
+				reducoes.grupos[g].faixas[f].amtr = aleatorioEntre(amtrIni,
+						reducoes.grupos[g].faixas[f].pcld);
 			} else {
-				reducoes[g][f].pcld = aleatorioEntre(reducoes[g][f - 1].pcld,
+				reducoes.grupos[g].faixas[f].pcld = aleatorioEntre(reducoes.grupos[g].faixas[f - 1].pcld,
 						pcldFim);
-				reducoes[g][f].amtr = aleatorioEntre(reducoes[g][f - 1].amtr,
-						reducoes[g][f].pcld);
+				reducoes.grupos[g].faixas[f].amtr = aleatorioEntre(reducoes.grupos[g].faixas[f - 1].amtr,
+						reducoes.grupos[g].faixas[f].pcld);
 			}
-			printf("%7.f;%5.f", reducoes[g][f].amtr, reducoes[g][f].pcld);
+			printf("%5i%1i: %5.f %5.f",g +  1, f + 1, reducoes.grupos[g].faixas[f].amtr, reducoes.grupos[g].faixas[f].pcld);
 		}
 		printf("\n");
 	}
 
-	printf("\n");
+	printf("\n\n");
 
-	for (g = 0; g < grupos; g++) {
-		for (f = 0; f < faixas; f++) {
-			printf("%4i%i", g + 1, f + 1);
-		}
-		printf("\n");
-	}
-
-	printf("\n");
-
-	combina(0, &grupos, &faixas, 0, 0, &melhorIndice, result);
+	combina(0, &grupos, reducoes.grupos[0].qtFaixas, 0, 0, &melhorIndice, result);
 
 	printf("Melhor Indice: %f | Melhor Resultado: %s\n\n", melhorIndice,
 			melhorResult);
