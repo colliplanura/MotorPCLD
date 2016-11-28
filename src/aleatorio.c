@@ -1,11 +1,11 @@
 #include <time.h>
+#include "aleatorio.h"
 
-bool executado = false;
-enor, int maior) {
+aleatorioEntre(int menor, int maior) {
     
-    if (not executado) {
+    if (!executado) {
         srand((unsigned) time(NULL));
-        executado = true;
+        executado = 1;
     }
 	return (menor + rand() % (maior - menor + 1));
 }

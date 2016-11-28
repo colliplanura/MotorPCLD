@@ -5,9 +5,11 @@
  * Data da criação: 23/11/2016
  */
 
-#include<string.h>
+#include <string.h>
+#include <stdio.h>
 
 typedef struct {
+    int gr, fxa;
 	float amtr, pcld;
 } faixa;
 
@@ -22,9 +24,22 @@ typedef struct {
 } reducao;
 
 reducao reducoes;
-char melhorResult[39];
 
-void combina(int gi, int *grupos, int faixas, float acmAmtr, float acmPcld,
+typedef struct {
+    char result1[39];     // menor valor para amortização
+    char result2[39];     // maior valor para amortização
+    char result3[39];     // melhor índice de reversão
+    char result4[39];     // melhor índice de reversão na faixa média +/- 10% da média
+    char result5[39];     // maior reversão a partir de um valor de entrada
+    char result6[39];     // maior reversão a partir com -20% de entrada
+    char result7[39];     // maior reversão a partir com -10% de entrada
+    char result8[39];     // maior reversão a partir com +10% de entrada
+    char result9[39];     // maior reversão a partir com +20% de entrada
+} resultado;
+
+resultado resultados;
+
+resultado combina(int gi, int *grupos, int faixas, float acmAmtr, float acmPcld,
 		float *melhorIndice, char resultado[]) {
 	char result[39] = "";
 	int fi;
@@ -37,7 +52,7 @@ void combina(int gi, int *grupos, int faixas, float acmAmtr, float acmPcld,
 
 			if ((acmAmtr / acmPcld) < *melhorIndice) {
 				*melhorIndice = (acmAmtr / acmPcld);
-				strcpy(melhorResult, result);
+				strcpy(resultados.result3, result);
 			}
 
 			if (gi < (*grupos - 1)) {

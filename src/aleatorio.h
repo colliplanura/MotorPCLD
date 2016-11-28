@@ -1,5 +1,5 @@
 #include <time.h>
 
-bool executado = false;
+unsigned char executado = 0;
 
 int aleatorioEntre(int menor, int maior);
