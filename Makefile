@@ -1,2 +1,2 @@
 all:
-	gcc src/*.c -o bin/testeAleatorio
+	gcc src/*.c -o bin/combina
