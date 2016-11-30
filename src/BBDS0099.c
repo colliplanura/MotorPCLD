@@ -10,20 +10,14 @@
  #include <string.h>
  #include <time.h>
  #include <float.h>
- /* #include <decimal.h> */
 
- /*
-  * PIC S9(4) COMP-5   =  signed short
-  * PIC S9(9) COMP-5   =  signed int
-  * PIC S9(15)V99 COMP-3 = decimal(17,2) include <decimal.h>
-  */
+/*
+ * ARCKC628 - Book do parametro da ARCSC628 - Motor de Combinações
+ * Autor: Sandro Fernandes Colli da Silva
+ * Data: 29/11/2016
+*/
 
- #define MAX_GRUPOS 10
- #define MAX_FAIXAS 8
-
- int combinacoes = 0;
-
- typedef struct {
+typedef struct {
  	signed int seqlErro;
  	char txErro[120];
  } erro;
@@ -66,15 +60,17 @@
  	rpst resposta;
  } parm;
 
- unsigned int aleatorioEntre(int menor, int maior) {
- 	static unsigned char executado = 0;
 
- 	if (!executado) {
- 		srand((unsigned) time(NULL));
- 		executado = 1;
- 	}
- 	return (menor + rand() % (maior - menor + 1));
- }
+ /*
+  * PIC S9(4) COMP-5   =  signed short
+  * PIC S9(9) COMP-5   =  signed int
+  * PIC S9(15)V99 COMP-3 = decimal(17,2) include <decimal.h>
+  */
+
+ #define MAX_GRUPOS 10
+ #define MAX_FAIXAS 8
+
+ int combinacoes = 0;
 
  erro validaEntrada(rqsc requisicao) {
  	int g, f;
@@ -171,10 +167,11 @@
  			}
  		}
  	}
+ 	return retErro;
  }
 
  double menorAmtr(rqsc *requisicao, rstd *result1) {
- 	int g, f;
+ 	int g;
  	double menorAmtr = DBL_MAX;
 
  	for (g = 0; g < (*requisicao).qtGrupos; g++) {
@@ -191,7 +188,7 @@
  }
 
  double maiorAmtr(rqsc *requisicao, rstd *result2) {
- 	int g, f;
+ 	int g;
  	double maiorAmtr = 0;
 
  	(*result2).qtGrFxa = 0;
@@ -223,7 +220,7 @@
  	static double maiorPcld110 = 0;
  	static double maiorPcld120 = 0;
 
- 	for (gi; gi < (*requisicao).qtGrupos; gi++) {
+ 	for (; gi < (*requisicao).qtGrupos; gi++) {
  		for (fi = 0; fi < (*requisicao).grupos[gi].qtFaixas; fi++) {
 
  			combinacoes++;
@@ -231,18 +228,17 @@
  			acmAmtr += (*requisicao).grupos[gi].faixas[fi].amtr;
  			acmPcld += (*requisicao).grupos[gi].faixas[fi].pcld;
 
- 			resultAtu.grFxa[resultAtu.qtGrFxa].gr =
+ 			resultAtu.grFxa[resultAtu.qtGrFxa - 1].gr =
  					(*requisicao).grupos[gi].gr;
- 			resultAtu.grFxa[resultAtu.qtGrFxa].fxa =
+ 			resultAtu.grFxa[resultAtu.qtGrFxa - 1].fxa =
  					(*requisicao).grupos[gi].faixas[fi].fxa;
- 			resultAtu.qtGrFxa++;
 
  			/*
  			 * Resultado 3 - Melhor Índice
  			 */
  			if ((acmAmtr / acmPcld) < melhorIndice) {
  				melhorIndice = (acmAmtr / acmPcld);
- 				(*resposta).result[3] = resultAtu;
+ 				(*resposta).result[2] = resultAtu;
  			}
 
  			/*
@@ -253,7 +249,7 @@
  					&& (acmAmtr < (mediaAmtr * 1.1))) {
  				if ((acmAmtr / acmPcld) < melhorIndice10) {
  					melhorIndice10 = (acmAmtr / acmPcld);
- 					(*resposta).result[4] = resultAtu;
+ 					(*resposta).result[3] = resultAtu;
  				}
  			}
 
@@ -264,7 +260,7 @@
  				if ((*requisicao).vlEntrada <= acmAmtr) {
  					if (acmPcld > maiorPcld) {
  						maiorPcld = acmPcld;
- 						(*resposta).result[5] = resultAtu;
+ 						(*resposta).result[4] = resultAtu;
  					}
  				}
  			}
@@ -277,7 +273,7 @@
  				if (0.8 * (*requisicao).vlEntrada <= acmAmtr) {
  					if (acmPcld > maiorPcld80) {
  						maiorPcld80 = acmPcld;
- 						(*resposta).result[6] = resultAtu;
+ 						(*resposta).result[5] = resultAtu;
  					}
  				}
  			}
@@ -290,7 +286,7 @@
  				if (0.9 * (*requisicao).vlEntrada <= acmAmtr) {
  					if (acmPcld > maiorPcld90) {
  						maiorPcld90 = acmPcld;
- 						(*resposta).result[7] = resultAtu;
+ 						(*resposta).result[6] = resultAtu;
  					}
  				}
  			}
@@ -303,7 +299,7 @@
  				if (1.1 * (*requisicao).vlEntrada <= acmAmtr) {
  					if (acmPcld > maiorPcld110) {
  						maiorPcld110 = acmPcld;
- 						(*resposta).result[8] = resultAtu;
+ 						(*resposta).result[7] = resultAtu;
  					}
  				}
  			}
@@ -316,7 +312,7 @@
  				if (1.2 * (*requisicao).vlEntrada <= acmAmtr) {
  					if (acmPcld > maiorPcld120) {
  						maiorPcld120 = acmPcld;
- 						(*resposta).result[9] = resultAtu;
+ 						(*resposta).result[8] = resultAtu;
  					}
  				}
  			}
@@ -329,40 +325,83 @@
  						acmPcld, mediaAmtr, resultAtu);
  			}
  		}
+
+ 		resultAtu.qtGrFxa++;
+
  	}
  	return;
  }
 
- int main(parm *parametro) {
- 	double start, stop, elapsed;
+ void displayInput(rqsc *requisicao, erro *prmErro) {
+	 int g, f;
+
+	 printf("\n\nSeql-erro: %i \nTx-erro: %s\n\n", (*prmErro).seqlErro, (*prmErro).txErro);
+
+	 printf("Entrada    Qt Gr\n");
+	 printf("%7.2f  %6i \n\n", (*requisicao).vlEntrada, (*requisicao).qtGrupos);
+
+	 printf("Cd Gr  Qt Fx  Cd Fx     Vl Amtr     Vl PCLD  Cd Fx     Vl Amtr     Vl PCLD  Cd Fx     Vl Amtr     Vl PCLD  Cd Fx     Vl Amtr     Vl PCLD  Cd Fx     Vl Amtr     Vl PCLD  Cd Fx     Vl Amtr     Vl PCLD  Cd Fx     Vl Amtr     Vl PCLD  Cd Fx     Vl Amtr     Vl PCLD\n");
+
+	 for (g = 0; g < (*requisicao).qtGrupos; g++) {
+	 	printf("%5i  %5i", (*requisicao).grupos[g].gr, (*requisicao).grupos[g].qtFaixas);
+
+	 	for (f = 0; f < (*requisicao).grupos[g].qtFaixas; f++) {
+	 		printf("%7i%12.2f%12.2f", (*requisicao).grupos[g].faixas[f].fxa, (*requisicao).grupos[g].faixas[f].amtr, (*requisicao).grupos[g].faixas[f].pcld);
+	 	}
+
+	 	printf("\n");
+	 }
+ }
+
+ void displayResposta(rpst *resposta) {
+ 	int r, gf;
+
+ 	for (r = 0; r < (*resposta).qtRstd; r++) {
+
+ 		printf("Resultado %i: %2i", r + 1, (*resposta).result[r].qtGrFxa);
+
+ 		for (gf = 0; gf < (*resposta).result[r].qtGrFxa; gf++) {
+
+ 			printf("%6i%3i", (*resposta).result[r].grFxa[gf].gr, (*resposta).result[r].grFxa[gf].fxa);
+
+ 		}
+ 		printf("\n");
+ 	}
+ }
+
+ int BBDS0099(parm *parametro) {
  	time_t timerini, timerfim;
  	rstd result;
  	double vlMenorAmtr, vlMaiorAmtr;
 
  	timerini = time(NULL);
 
+ 	displayInput(&(*parametro).requisicao, &(*parametro).retErro);
+
  	if (validaEntrada((*parametro).requisicao).seqlErro != 0)
  		return 1;
 
  	(*parametro).resposta.qtRstd = 1;
  	vlMenorAmtr = menorAmtr(&(*parametro).requisicao,
- 			&(*parametro).resposta.result[1]);
+ 			&(*parametro).resposta.result[0]);
 
  	(*parametro).resposta.qtRstd = 2;
  	vlMaiorAmtr = maiorAmtr(&(*parametro).requisicao,
- 			&(*parametro).resposta.result[2]);
+ 			&(*parametro).resposta.result[1]);
 
  	if ((*parametro).requisicao.vlEntrada == 0)
  		(*parametro).resposta.qtRstd = 4;
  	else
  		(*parametro).resposta.qtRstd = 9;
 
- 	result.qtGrFxa = 0;
+ 	result.qtGrFxa = 1;
  	combina(&(*parametro).requisicao, &(*parametro).resposta, 0, 0,
- 			0, (vlMenorAmtr + vlMenorAmtr) / 2, result);
+ 			0, (vlMenorAmtr + vlMaiorAmtr) / 2, result);
 
- 	printf("Início: %s\n", ctime(&timerini));
- 	printf("Número de combinações: %i\n", combinacoes);
+    displayResposta(&(*parametro).resposta);
+
+ 	printf("\nNúmero de combinações: %i\n", combinacoes);
+ 	printf("\nInício: %s\n", ctime(&timerini));
  	timerfim = time(NULL);
  	printf("Fim...: %s\n", ctime(&timerfim));
 

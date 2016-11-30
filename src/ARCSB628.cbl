@@ -125,7 +125,7 @@
            03  FILLER                       PIC  X(40)
                           VALUE 'Melhor Indice Amortizacao/PCLD'.
            03  FILLER                       PIC  X(40)
-                          VALUE 'Melhor IC na faixa média +/- 10%'.
+                          VALUE 'Melhor IC na faixa média +/- 10% '.
            03  FILLER                       PIC  X(40)
                           VALUE 'Melhor reversao PCLD com a entrada'.
            03  FILLER                       PIC  X(40)
@@ -147,7 +147,7 @@
 
        01  GR-FXA.
            03  CD-GR-PRD                    PIC  9(02).
-           03  FXA-RVSA                     PIC  9(01).
+           03  FXA-RVSA                     PIC  9(02).
 
       *----------------------------------------------------------------*
       * Book das subrotinas e operacoes chamadas
@@ -185,7 +185,7 @@
                    09  FILLER               PIC X(01).
                    09  DSP-CD-FXA-RVSA-RSTD PIC Z9.
                    09  FILLER               PIC X(02).
-
+       01  EIBCALEN                         PIC 9(09).
 
       *----------------------------------------------------------------*
       *    Fim da LOCAL-STORAGE
@@ -196,8 +196,8 @@
        LINKAGE SECTION.
 
        01  DFHCOMMAREA.
--INC ARCKB628
-
+       COPY ARCKB628
+           .
       *----------------------------------------------------------------*
        PROCEDURE DIVISION USING DFHCOMMAREA.
       *----------------------------------------------------------------*
@@ -205,6 +205,8 @@
        000000-PRINCIPAL SECTION.
       *----------------------------------------------------------------*
       *    CALL SBVERSAO USING CTE-PROG CTE-VERS
+
+           MOVE LENGTH OF DFHCOMMAREA TO EIBCALEN
 
            PERFORM 100000-PROCEDIMENTO-INICIAIS
            PERFORM 110000-VALIDAR-REQUISICAO
@@ -307,14 +309,14 @@
       *----------------------------------------------------------------*
        200000-PROCESSAR                  SECTION.
       *----------------------------------------------------------------*
+           MOVE 4                       TO ARCSB628-QT-RSTD
+
            PERFORM 250005-MNR-MOR-AMTZ
 
            MULTIPLY MED-VL BY PC-ABXO GIVING VL-PC-ABXO
            MULTIPLY MED-VL BY PC-ACI  GIVING VL-PC-ACI
 
-           IF  ARCSB628-VL-ENTD EQUAL ZEROS
-               MOVE 4                   TO ARCSB628-QT-RSTD
-           ELSE
+           IF  ARCSB628-VL-ENTD NOT EQUAL ZEROS
                MULTIPLY ARCSB628-VL-ENTD BY 0,8 GIVING VL-ENTD-80
                MULTIPLY ARCSB628-VL-ENTD BY 0,9 GIVING VL-ENTD-90
                MULTIPLY ARCSB628-VL-ENTD BY 1,1 GIVING VL-ENTD-110
@@ -331,7 +333,6 @@
       *----------------------------------------------------------------*
        250005-MNR-MOR-AMTZ SECTION.
       *----------------------------------------------------------------*
-           MOVE 2                       TO ARCSB628-QT-RSTD
            MOVE 1                       TO ARCSB628-QT-FXA-RSTD(1)
            MOVE ARCSB628-QT-GR          TO ARCSB628-QT-FXA-RSTD(2)
 
@@ -375,10 +376,9 @@
                PERFORM VARYING IC-FXA1 FROM 1 BY 1
                UNTIL IC-FXA1 GREATER ARCSB628-QT-FXA(IC-GR1)
       *        Um a um
-                   MOVE ZEROS           TO IC-FXA-RSTD
-                                           ACM-AMTR
+                   MOVE ZEROS           TO ACM-AMTR
                                            ACM-PCLD
-                                           RSTD-ATU-QT-RSTD
+                   MOVE 1               TO RSTD-ATU-QT-RSTD
 
                    MOVE IC-GR1          TO IC-GR
                    MOVE IC-FXA1         TO IC-FXA
@@ -398,7 +398,7 @@
            PERFORM VARYING IC-GR2 FROM IC-GR2 BY 1
            UNTIL IC-GR2 GREATER ARCSB628-QT-GR
 
-               ADD 1                    TO IC-FXA-RSTD
+               ADD 1                    TO RSTD-ATU-QT-RSTD
 
                PERFORM VARYING IC-FXA2 FROM 1 BY 1
                UNTIL IC-FXA2 GREATER ARCSB628-QT-FXA(IC-GR2)
@@ -421,7 +421,7 @@
            PERFORM VARYING IC-GR3 FROM IC-GR3 BY 1
            UNTIL IC-GR3 GREATER ARCSB628-QT-GR
 
-               ADD 1                    TO IC-FXA-RSTD
+               ADD 1                    TO RSTD-ATU-QT-RSTD
 
                PERFORM VARYING IC-FXA3 FROM 1 BY 1
                UNTIL IC-FXA3 GREATER ARCSB628-QT-FXA(IC-GR3)
@@ -444,7 +444,7 @@
            PERFORM VARYING IC-GR4 FROM IC-GR4 BY 1
            UNTIL IC-GR4 GREATER ARCSB628-QT-GR
 
-               ADD 1                    TO IC-FXA-RSTD
+               ADD 1                    TO RSTD-ATU-QT-RSTD
 
                PERFORM VARYING IC-FXA4 FROM 1 BY 1
                UNTIL IC-FXA4 GREATER ARCSB628-QT-FXA(IC-GR4)
@@ -467,7 +467,7 @@
            PERFORM VARYING IC-GR5 FROM IC-GR5 BY 1
            UNTIL IC-GR5 GREATER ARCSB628-QT-GR
 
-               ADD 1                    TO IC-FXA-RSTD
+               ADD 1                    TO RSTD-ATU-QT-RSTD
 
                PERFORM VARYING IC-FXA5 FROM 1 BY 1
                UNTIL IC-FXA5 GREATER ARCSB628-QT-FXA(IC-GR5)
@@ -490,7 +490,7 @@
            PERFORM VARYING IC-GR6 FROM IC-GR6 BY 1
            UNTIL IC-GR6 GREATER ARCSB628-QT-GR
 
-               ADD 1                    TO IC-FXA-RSTD
+               ADD 1                    TO RSTD-ATU-QT-RSTD
 
                PERFORM VARYING IC-FXA6 FROM 1 BY 1
                UNTIL IC-FXA6 GREATER ARCSB628-QT-FXA(IC-GR6)
@@ -513,7 +513,7 @@
            PERFORM VARYING IC-GR7 FROM IC-GR7 BY 1
            UNTIL IC-GR7 GREATER ARCSB628-QT-GR
 
-               ADD 1                    TO IC-FXA-RSTD
+               ADD 1                    TO RSTD-ATU-QT-RSTD
 
                PERFORM VARYING IC-FXA7 FROM 1 BY 1
                UNTIL IC-FXA7 GREATER ARCSB628-QT-FXA(IC-GR7)
@@ -536,7 +536,7 @@
            PERFORM VARYING IC-GR8 FROM IC-GR8 BY 1
            UNTIL IC-GR8 GREATER ARCSB628-QT-GR
 
-               ADD 1                    TO IC-FXA-RSTD
+               ADD 1                    TO RSTD-ATU-QT-RSTD
 
                PERFORM VARYING IC-FXA8 FROM 1 BY 1
                UNTIL IC-FXA8 GREATER ARCSB628-QT-FXA(IC-GR8)
@@ -559,7 +559,7 @@
            PERFORM VARYING IC-GR9 FROM IC-GR9 BY 1
            UNTIL IC-GR9 GREATER ARCSB628-QT-GR
 
-               ADD 1                    TO IC-FXA-RSTD
+               ADD 1                    TO RSTD-ATU-QT-RSTD
 
                PERFORM VARYING IC-FXA9 FROM 1 BY 1
                UNTIL IC-FXA9 GREATER ARCSB628-QT-FXA(IC-GR9)
@@ -582,7 +582,7 @@
            PERFORM VARYING IC-GR10 FROM IC-GR10 BY 1
            UNTIL IC-GR10 GREATER ARCSB628-QT-GR
 
-               ADD 1                    TO IC-FXA-RSTD
+               ADD 1                    TO RSTD-ATU-QT-RSTD
 
                PERFORM VARYING IC-FXA10 FROM 1 BY 1
                UNTIL IC-FXA10 GREATER ARCSB628-QT-FXA(IC-GR10)
@@ -601,7 +601,8 @@
       *----------------------------------------------------------------*
        250300-MTA-RSTD-3-9 SECTION.
       *----------------------------------------------------------------*
-           ADD 1                              TO RSTD-ATU-QT-RSTD
+      *    ADD 1                              TO RSTD-ATU-QT-RSTD
+
            MOVE ARCSB628-CD-GR-PRD                (IC-GR)
                        TO RSTD-ATU-CD-GR-PRD      (RSTD-ATU-QT-RSTD)
            MOVE ARCSB628-CD-FXA-RVSA-RSCO         (IC-GR IC-FXA)
