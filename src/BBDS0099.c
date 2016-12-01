@@ -70,7 +70,7 @@ typedef struct {
  #define MAX_GRUPOS 10
  #define MAX_FAIXAS 8
 
- int combinacoes = 0;
+ unsigned long int combinacoes = 0;
 
  erro validaEntrada(rqsc requisicao) {
  	int g, f;
@@ -221,6 +221,9 @@ typedef struct {
  	static double maiorPcld120 = 0;
 
  	for (; gi < (*requisicao).qtGrupos; gi++) {
+
+ 		resultAtu.qtGrFxa++;
+
  		for (fi = 0; fi < (*requisicao).grupos[gi].qtFaixas; fi++) {
 
  			combinacoes++;
@@ -245,6 +248,24 @@ typedef struct {
  			 * Resultado 4 - Melhor Índice entre -10% e +10% da média
  			 *  da amortizacao
  			 */
+// 			if ((acmAmtr > (mediaAmtr * 0.9))
+// 					&& (acmAmtr < (mediaAmtr * 1.1))) {
+//				printf("Result4: Melhor Índice: %f. Índice Atual: %f\n", melhorIndice, (acmAmtr / acmPcld));
+//
+//				printf("Melhor resultado: ");
+//				for (int i = 0; i < (*resposta).result[3].qtGrFxa; i++) {
+//					printf("%4i%2i", (*resposta).result[3].grFxa[i].gr, (*resposta).result[3].grFxa[i].fxa);
+//				}
+//
+//				printf("    Resultado Atual: ");
+//				for (int i = 0; i < resultAtu.qtGrFxa; i++) {
+//					printf("%4i%2i", resultAtu.grFxa[i].gr, resultAtu.grFxa[i].fxa);
+//				}
+//
+//				printf("\n\n");
+// 			}
+
+
  			if ((acmAmtr > (mediaAmtr * 0.9))
  					&& (acmAmtr < (mediaAmtr * 1.1))) {
  				if ((acmAmtr / acmPcld) < melhorIndice10) {
@@ -257,7 +278,7 @@ typedef struct {
  			 * Resultado 5 - Melhor reversão da PCLD com a entrada
  			 */
  			if ((*requisicao).vlEntrada > 0) {
- 				if ((*requisicao).vlEntrada <= acmAmtr) {
+ 				if ((*requisicao).vlEntrada >= acmAmtr) {
  					if (acmPcld > maiorPcld) {
  						maiorPcld = acmPcld;
  						(*resposta).result[4] = resultAtu;
@@ -270,7 +291,7 @@ typedef struct {
  			 *  entrada
  			 */
  			if ((*requisicao).vlEntrada > 0) {
- 				if (0.8 * (*requisicao).vlEntrada <= acmAmtr) {
+ 				if (0.8 * (*requisicao).vlEntrada >= acmAmtr) {
  					if (acmPcld > maiorPcld80) {
  						maiorPcld80 = acmPcld;
  						(*resposta).result[5] = resultAtu;
@@ -283,7 +304,7 @@ typedef struct {
  			 *  entrada
  			 */
  			if ((*requisicao).vlEntrada > 0) {
- 				if (0.9 * (*requisicao).vlEntrada <= acmAmtr) {
+ 				if (0.9 * (*requisicao).vlEntrada >= acmAmtr) {
  					if (acmPcld > maiorPcld90) {
  						maiorPcld90 = acmPcld;
  						(*resposta).result[6] = resultAtu;
@@ -296,7 +317,7 @@ typedef struct {
  			 *  entrada
  			 */
  			if ((*requisicao).vlEntrada > 0) {
- 				if (1.1 * (*requisicao).vlEntrada <= acmAmtr) {
+ 				if (1.1 * (*requisicao).vlEntrada >= acmAmtr) {
  					if (acmPcld > maiorPcld110) {
  						maiorPcld110 = acmPcld;
  						(*resposta).result[7] = resultAtu;
@@ -309,7 +330,7 @@ typedef struct {
  			 *  entrada
  			 */
  			if ((*requisicao).vlEntrada > 0) {
- 				if (1.2 * (*requisicao).vlEntrada <= acmAmtr) {
+ 				if (1.2 * (*requisicao).vlEntrada >= acmAmtr) {
  					if (acmPcld > maiorPcld120) {
  						maiorPcld120 = acmPcld;
  						(*resposta).result[8] = resultAtu;
@@ -326,7 +347,6 @@ typedef struct {
  			}
  		}
 
- 		resultAtu.qtGrFxa++;
 
  	}
  	return;
@@ -394,13 +414,23 @@ typedef struct {
  	else
  		(*parametro).resposta.qtRstd = 9;
 
- 	result.qtGrFxa = 1;
+ 	result.qtGrFxa = 0;
+ 	(*parametro).resposta.result[2].qtGrFxa = 0;
+ 	(*parametro).resposta.result[3].qtGrFxa = 0;
+ 	(*parametro).resposta.result[4].qtGrFxa = 0;
+ 	(*parametro).resposta.result[5].qtGrFxa = 0;
+ 	(*parametro).resposta.result[6].qtGrFxa = 0;
+ 	(*parametro).resposta.result[7].qtGrFxa = 0;
+ 	(*parametro).resposta.result[8].qtGrFxa = 0;
+
+// 	printf("Menor valor: %9.2f. Maior valor: %9.2f. Média: %9.2f. (-10\%): %9.2f. (+10\%): %9.2f\n\n", vlMenorAmtr, vlMaiorAmtr, (vlMenorAmtr + vlMaiorAmtr) / 2, ((vlMenorAmtr + vlMaiorAmtr) / 2) * 0.9, ((vlMenorAmtr + vlMaiorAmtr) / 2) * 1.1);
+
  	combina(&(*parametro).requisicao, &(*parametro).resposta, 0, 0,
  			0, (vlMenorAmtr + vlMaiorAmtr) / 2, result);
 
     displayResposta(&(*parametro).resposta);
 
- 	printf("\nNúmero de combinações: %i\n", combinacoes);
+ 	printf("\nNúmero de combinações: %lu\n", combinacoes);
  	printf("\nInício: %s\n", ctime(&timerini));
  	timerfim = time(NULL);
  	printf("Fim...: %s\n", ctime(&timerfim));
